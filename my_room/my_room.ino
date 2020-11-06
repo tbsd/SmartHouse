@@ -23,7 +23,6 @@ class Pair {
 
 template <typename T, size_t maxSize>
 class LimitedList {
-  /* static const int maxSize = 3; */
   T data[maxSize];
   int last = -1;
 
