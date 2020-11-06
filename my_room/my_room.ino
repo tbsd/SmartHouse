@@ -22,14 +22,14 @@ class Pair {
 
 
 template <typename T, size_t maxSize>
-class LimitedList {
+class LimitedQueue {
   T data[maxSize];
   int last = -1;
 
   public:
-  LimitedList() {};
+  LimitedQueue() {};
 
-  LimitedList(T a, T b, T c) : last(maxSize - 1) {
+  LimitedQueue(T a, T b, T c) : last(maxSize - 1) {
     data[0] = a;
     data[1] = b;
     data[2] = c;
@@ -46,7 +46,7 @@ class LimitedList {
 
   void clear() {last = -1;}
 
-  bool operator==(const LimitedList &other) const {
+  bool operator==(const LimitedQueue &other) const {
     if (last != other.last)
       return false;
     for (int i = 0; i <= last; ++i)
@@ -55,7 +55,7 @@ class LimitedList {
     return true;
   }
 
-  bool operator!=(const LimitedList &other) const {
+  bool operator!=(const LimitedQueue &other) const {
     return !(*this == other);
   }
 
@@ -84,12 +84,12 @@ IPAddress SUBNET(255,255,255,0);
 const int SENSOR1 = 16;
 const int SENSOR2 = 5;
 const int LIGHTS = 14;
-LimitedList<Pair<bool, bool>, 3> COMING_IN (Pair<bool, bool>(false, true), Pair<bool, bool>(false, false), Pair<bool, bool>(true, false));
-LimitedList<Pair<bool, bool>, 3> COMING_OUT(Pair<bool, bool>(true, false), Pair<bool, bool>(false, false), Pair<bool, bool>(false, true));
+LimitedQueue<Pair<bool, bool>, 3> COMING_IN (Pair<bool, bool>(false, true), Pair<bool, bool>(false, false), Pair<bool, bool>(true, false));
+LimitedQueue<Pair<bool, bool>, 3> COMING_OUT(Pair<bool, bool>(true, false), Pair<bool, bool>(false, false), Pair<bool, bool>(false, true));
 bool isOn = true;
 
 int PEOPLE_IN_ROOM = 0;
-LimitedList<Pair<bool, bool>, 3> STATE;
+LimitedQueue<Pair<bool, bool>, 3> STATE;
 ESP8266WebServer SERVER(80);
 unsigned long SLEEP_START;
 const unsigned long SLEEP_TIME = 10 * 60 * 60;
@@ -189,3 +189,4 @@ void onTripwireTeared() {
   else
     digitalWrite(LIGHTS, LOW);
 }
+
