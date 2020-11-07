@@ -2,11 +2,6 @@
 
 #define HAVE_NETDUMP 0
 
-#ifndef STASSID
-#define STASSID "********************"
-#define STAPSK  "********************"
-#endif
-
 #include <ESP8266WiFi.h>
 #include <lwip/napt.h>
 #include <lwip/dns.h>
@@ -36,6 +31,7 @@ void dump(int netif_idx, const char* data, size_t len, int out, int success) {
 #include <NeoPixelBrightnessBus.h>
 #include <NeoPixelAnimator.h>
 #include <NeoPixelBus.h>
+#include "secrets.h"
 
 #define MOVE_S1 16
 #define MOVE_S2 5
@@ -72,7 +68,7 @@ void setup() {
 
   // first, connect to STA so we can get a proper local DNS server
   WiFi.mode(WIFI_STA);
-  WiFi.begin(STASSID, STAPSK);
+  WiFi.begin(SSID, Password);
   int attempts = 0;
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print('.');
@@ -96,8 +92,9 @@ void setup() {
     IPAddress(172, 217, 28, 254),
     IPAddress(172, 217, 28, 254),
     IPAddress(255, 255, 255, 0));
-  WiFi.softAP("☆" STASSID "☆", STAPSK);
-  Serial.printf("AP: %s\n", WiFi.softAPIP().toString().c_str());
+  const std::string newSSID = std::string("☆") + SSID + "☆";
+  WiFi.softAP(newSSID.c_str(), Password);
+  Serial.printf("AP: %s\n", newSSID.c_str());
 
   Serial.printf("Heap before: %d\n", ESP.getFreeHeap());
   err_t ret = ip_napt_init(NAPT, NAPT_PORT);
@@ -106,7 +103,7 @@ void setup() {
     ret = ip_napt_enable_no(SOFTAP_IF, 1);
     Serial.printf("ip_napt_enable_no(SOFTAP_IF): ret=%d (OK=%d)\n", (int)ret, (int)ERR_OK);
     if (ret == ERR_OK) {
-      Serial.printf("WiFi Network '%s' with same password is now NATed behind '%s'\n", STASSID "extender", STASSID);
+      Serial.printf("WiFi Network '%s' with same password is now NATed behind '%s'\n", newSSID.c_str(), SSID);
     }
   }
   Serial.printf("Heap after napt init: %d\n", ESP.getFreeHeap());
@@ -205,3 +202,4 @@ void switchLesserLights() {
     }
     }
   }
+

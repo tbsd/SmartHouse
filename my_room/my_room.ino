@@ -1,35 +1,18 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <Time.h>
-
-template <typename T, typename U> 
-class Pair {
-  public:
-  T first;
-  U second;
-
-  Pair() {};
-  Pair(T first, U second) : first(first), second(second) {};
-
-  bool operator==(const Pair<T, U> &other) const {
-    return first == other.first && second == other.second;
-  }
-
-  bool operator!=(const Pair<T, U> &other) const {
-    return !(*this == other);
-  }
-};
-
+#include <utility>
+#include "secrets.h"
 
 template <typename T, size_t maxSize>
-class LimitedQueue {
+class LimitedList {
   T data[maxSize];
   int last = -1;
 
   public:
-  LimitedQueue() {};
+  LimitedList() {};
 
-  LimitedQueue(T a, T b, T c) : last(maxSize - 1) {
+  LimitedList(T a, T b, T c) : last(maxSize - 1) {
     data[0] = a;
     data[1] = b;
     data[2] = c;
@@ -46,7 +29,7 @@ class LimitedQueue {
 
   void clear() {last = -1;}
 
-  bool operator==(const LimitedQueue &other) const {
+  bool operator==(const LimitedList &other) const {
     if (last != other.last)
       return false;
     for (int i = 0; i <= last; ++i)
@@ -55,7 +38,7 @@ class LimitedQueue {
     return true;
   }
 
-  bool operator!=(const LimitedQueue &other) const {
+  bool operator!=(const LimitedList &other) const {
     return !(*this == other);
   }
 
@@ -76,20 +59,18 @@ class LimitedQueue {
   }
 };
 
-const char SSID[] = "********************";
-const char PASSWORD[] = "********************";
 IPAddress IP(192,168,0,10);
 IPAddress GATEWAY(192,168,0,1);
 IPAddress SUBNET(255,255,255,0);
 const int SENSOR1 = 16;
 const int SENSOR2 = 5;
 const int LIGHTS = 14;
-LimitedQueue<Pair<bool, bool>, 3> COMING_IN (Pair<bool, bool>(false, true), Pair<bool, bool>(false, false), Pair<bool, bool>(true, false));
-LimitedQueue<Pair<bool, bool>, 3> COMING_OUT(Pair<bool, bool>(true, false), Pair<bool, bool>(false, false), Pair<bool, bool>(false, true));
+LimitedList<std::pair<bool, bool>, 3> COMING_IN (std::pair<bool, bool>(false, true), std::pair<bool, bool>(false, false), std::pair<bool, bool>(true, false));
+LimitedList<std::pair<bool, bool>, 3> COMING_OUT(std::pair<bool, bool>(true, false), std::pair<bool, bool>(false, false), std::pair<bool, bool>(false, true));
 bool isOn = true;
 
 int PEOPLE_IN_ROOM = 0;
-LimitedQueue<Pair<bool, bool>, 3> STATE;
+LimitedList<std::pair<bool, bool>, 3> STATE;
 ESP8266WebServer SERVER(80);
 unsigned long SLEEP_START;
 const unsigned long SLEEP_TIME = 10 * 60 * 60;
@@ -106,7 +87,7 @@ void setup() {
  
   digitalWrite(LIGHTS, LOW);
 
-  WiFi.begin(SSID, PASSWORD);
+  WiFi.begin(SSID, Password);
   WiFi.config(IP, GATEWAY, SUBNET);
   SERVER.on("/switch", [](){
     nightMode();
@@ -142,7 +123,7 @@ void setup() {
 }
 
 void loop() {
-  Pair<bool, bool> cur(!digitalRead(SENSOR1), !digitalRead(SENSOR2));
+  std::pair<bool, bool> cur(!digitalRead(SENSOR1), !digitalRead(SENSOR2));
   if (cur.first && cur.second) {
     if (STATE.size() == 3) {
       onTripwireTeared();
