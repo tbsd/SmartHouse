@@ -37,6 +37,7 @@ void dump(int netif_idx, const char* data, size_t len, int out, int success) {
 #define MOVE_S2 5
 #define LIGHTS 0
 #define LESSER_LIGHTS 15 // actually data flows through RX pin somehow
+#define LIGHTS_BUTTON 13
 
 #define LED_COUNT 23
 
@@ -112,6 +113,7 @@ void setup() {
   }
   pinMode(MOVE_S1, INPUT_PULLUP);
   pinMode(MOVE_S2, INPUT_PULLUP);
+  pinMode(LIGHTS_BUTTON, INPUT_PULLUP);
   pinMode(LIGHTS, OUTPUT);
   digitalWrite(LIGHTS, LOW);
 
@@ -140,6 +142,14 @@ void setup() {
 
 void loop() { 
   delay(10); 
+  static bool buttonPushed = false;
+  if (!buttonPushed && digitalRead(LIGHTS_BUTTON)) {
+    triggerRelay(LIGHTS);
+    buttonPushed = true;
+    if (IsLesserLightsOn)
+      switchLesserLights();
+  } else 
+    buttonPushed = false;
   static long lastLightCheck = 0;
   if (millis() + TimeToCheckLightness > lastLightCheck && !IsLightsOn && !IsLesserLightsOn) {
     TimeClient.update();
