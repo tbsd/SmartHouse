@@ -42,11 +42,9 @@ void dump(int netif_idx, const char* data, size_t len, int out, int success) {
 #define LED_COUNT 23
 
 bool IsLightsOn = false; 
-int TimeToIncreaseLights = 50 * 1000;
 int TimeToCheckLightness = 10 * 60 * 1000;
 bool IsLesserLightsOn = false;
 bool IsDay = false;
-double NightTimer; 
 int ConnectAttemptsCount = 30;
 NeoPixelBus<NeoGrbwFeature, NeoSk6812Method> strip(LED_COUNT, LESSER_LIGHTS);
 const long utcOffsetInSeconds = 3 * 60 * 60;
@@ -166,7 +164,6 @@ void loop() {
         IsLightsOn = true;
       } else {
         switchLesserLights();
-        NightTimer = millis();
       }
     }
   } else {
@@ -175,14 +172,6 @@ void loop() {
       IsLightsOn = false;
     }
     if (IsLesserLightsOn) {
-      switchLesserLights();
-    }
-  }
-  if (IsLesserLightsOn && millis() - NightTimer >= TimeToIncreaseLights) {
-    if (!IsLightsOn) {
-      triggerRelay(LIGHTS);
-      IsLightsOn = true;
-      delay(5);
       switchLesserLights();
     }
   }
